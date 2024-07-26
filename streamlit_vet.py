@@ -1,27 +1,50 @@
 import pandas as pd
 import streamlit as st
 import pydeck as pdk
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 
-# URL del archivo Excel en GitHub
+# URL path GitHub
 # Vet = 'https://github.com/cvillarramo/Vet_Mexicali/raw/main/Vet.xlsx'
+# URL Path working local
 Vet ="Vet.xlsx"
 
+#### Functions ######
+
 def fetch_veterinarias():
+    """Load data from Excel File"""
     df = pd.read_excel(Vet)
     return df
  
+def geocode_address(address, geolocator): 
+   """Geocode the address when needed to get lat and long. 
+   Geopy has a precision around 2.7 km, don't like it, think about and improvement for next iteration"""
+   
+   try:
+        location = geolocator.geocode(address,timeout=10)
+        if location:
+            return location.latitude, location.longitude
+        else:
+            return None, None
+   except GeocoderTimedOut:
+        return geocode_address(address, geolocator) 
+   except Exception as e:
+        print('Error geocodificandola direccion {address}: {e}')
+        return None, None
+
+
+##### Streamlit #####
 st.title('Buscador de Veterinarias')
 
-# Cargar datos
+# Load Data
 df = fetch_veterinarias()
 
-# Agregar filtros
+# Apply filters by user
 st.sidebar.header('Filtros')
 atencion_urgencias = st.sidebar.checkbox('Atiende urgencias')
 tarifa_rescatados = st.sidebar.checkbox('Tarifa preferencial animales rescatados')
 servicio_domicilio = st.sidebar.checkbox('Servicio a domicilio')
 
-# Aplicar filtros
 if atencion_urgencias:
     df = df[df['Atiende urgencias'] == 'Si']
 if tarifa_rescatados:
@@ -29,14 +52,24 @@ if tarifa_rescatados:
 if servicio_domicilio:
     df = df[df['Servicio a domicilio'] == 'Si']
 
-# Mapa
+####### Display Map #########
 st.subheader('Mapa de Veterinarias')
 st.write('Haz clic en los marcadores para ver más información.')
 
-# Suponiendo que las columnas 'latitud' y 'longitud' están disponibles
-# Si no están, usa una librería de geocodificación para obtenerlas
+# Initialize geolocator
+geolocator = Nominatim(user_agent="MyVetApp")
+
+# Filter and filling missing coordinates
+df_missing_coords = df[df['latitud'].isna() | df['longitud'].isna()]
+
+for index, row in df_missing_coords.iterrows():
+    address=row['Direccion']
+    lat,lon = geocode_address(address, geolocator)
+    df.at[index,'latitud'] = lat
+    df.at[index,'longitud']= lon
+
 if 'latitud' in df.columns and 'longitud' in df.columns:
-    # Crear mapa
+    # Create Map
     deck = pdk.Deck(
         initial_view_state=pdk.ViewState(
             latitude=df['latitud'].mean(),
