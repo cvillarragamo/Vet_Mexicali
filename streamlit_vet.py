@@ -89,10 +89,48 @@ if 'latitud' in df.columns and 'longitud' in df.columns:
             )
         ],
         tooltip={
-            "text": "{Nombre}\n{Telefono}\n{Direccion}\nHorario: {Horario}\nAtiende urgencias: {Atiende urgencias}\nTarifa preferencial: {Tarifa preferencial animales rescatados}\nServicio a domicilio: {Servicio a domicilio}"
+            "text": "{Nombre}\nTeléfono: {Telefono}\n{Direccion}\nHorario: {Horario}\nAtiende urgencias: {Atiende urgencias}\nTarifa preferencial: {Tarifa preferencial animales rescatados}\nServicio a domicilio: {Servicio a domicilio}"
         }
     )
     st.pydeck_chart(deck)
 else:
     st.write("El archivo Excel no contiene columnas de latitud y longitud.")
 
+
+
+####### Visit Counter ##### 
+#This is just for fun. It is not persistent, so it would restart each re-run of the app.
+
+if 'visitas' not in st.session_state:
+    st.session_state.visitas = 1
+else:
+    st.session_state.visitas += 1
+
+#Counter Container
+with st.container():
+    st.write("---")  # horizontal line for visual separation
+    col1, col2 = st.columns([1, 1])  # Divide into columns for better visual distribution
+
+    # Emoji for the "First" column
+    with col1:
+        st.markdown("""
+            <h3 style='text-align: center; color: blue;'>
+                👀🐶
+            </h3>
+        """, unsafe_allow_html=True)
+
+    # visit counter in the other column
+    with col2:
+        st.markdown(f"""
+            <h5 style='text-align: center; color: grey;'>
+                Esta aplicación ha sido visitada {st.session_state.visitas} veces en esta sesión.
+            </h5>
+        """, unsafe_allow_html=True)
+    st.write("---")  # horizontal line for aesthetics
+
+
+####### Footer section for contributions ############
+st.markdown("""
+#### ¿Quieres contribuir?
+<i>Si tienes más información o sugerencias, no dudes en escribirme a:</i> <a href="mailto:cvillarragamo@gmail.com"><b><i>Enviar Email</i></b></a>
+""", unsafe_allow_html=True)
