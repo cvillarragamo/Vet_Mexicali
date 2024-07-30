@@ -4,9 +4,8 @@ import pydeck as pdk
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 
-# URL path GitHub
-# Vet = 'https://github.com/cvillarramo/Vet_Mexicali/raw/main/Vet.xlsx'
-# URL Path working local
+
+#Exel file Path
 Vet ="Vet.xlsx"
 
 #### Functions ######
